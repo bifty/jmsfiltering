@@ -16,6 +16,7 @@ import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 public class ClaimManagement {
 
     public static void main(String[] args) throws NamingException, JMSException {
+        System.out.println("starting ...");
         InitialContext initialContext = new InitialContext();
         Queue requestQueue = (Queue) initialContext.lookup("queue/claimQueue");
 
@@ -23,12 +24,15 @@ public class ClaimManagement {
              JMSContext jmsContext = cf.createContext()) {
             JMSProducer producer = jmsContext.createProducer();
             JMSConsumer consumer = jmsContext.createConsumer(requestQueue, "doctorType IN ('neuro','psych') OR JMSPriority BETWEEN 5 AND 9");
+            JMSConsumer consumer1 = jmsContext.createConsumer(requestQueue, "hospitalId=1");
+            JMSConsumer consumer2 = jmsContext.createConsumer(requestQueue, "BETWEEN 1000 AND 5000");
+            JMSConsumer consumer3 = jmsContext.createConsumer(requestQueue, "doctorName like 'J%'");
 
             ObjectMessage objectMessage = jmsContext.createObjectMessage();
             //objectMessage.setIntProperty("hospitalId", 1);
             //objectMessage.setDoubleProperty("claimAmount", 1000);
             //objectMessage.setStringProperty("doctorName", "John");
-            objectMessage.setStringProperty("doctorType", "gyna");
+            objectMessage.setStringProperty("doctorType", "neuro");
             Claim claim = new Claim();
             claim.setHospitalId(1);
             claim.setClaimAmount(1000);
@@ -40,6 +44,7 @@ public class ClaimManagement {
             producer.send(requestQueue, objectMessage);
 
             Claim receiveBody = consumer.receiveBody(Claim.class);
+            System.out.println("receiving ...");
             System.out.println(receiveBody.getClaimAmount());
         }
     }
